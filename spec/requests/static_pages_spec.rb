@@ -33,7 +33,7 @@ describe "Static pages" do
     it { should have_selector('title', text: full_title('Contact')) }
   end
 
-it "should have the right links on the layout" do
+  it "should have the right links on the layout" do
     visit root_path
     click_link "About"
     page.should have_selector 'title', text: full_title('About Us')
@@ -46,5 +46,21 @@ it "should have the right links on the layout" do
     page.should have_selector 'title', text: full_title('Sign up')
     click_link "sample app"
     page.should have_selector 'title', text: full_title('')
+  end
+
+  describe "for signed-in users" do
+    let(:user) { FactoryGirl.create(:user) }
+    before do
+      FactoryGirl.create(:micropost, user: user, content: "Lorem ipsum")
+      FactoryGirl.create(:micropost, user: user, content: "Dolor sit amet")
+      sign_in user
+      visit root_path
+    end
+
+    it "should render the user's feed" do
+      user.feed.each do |item|
+        page.should have_selector("li##{item.id}", text: item.content)
+      end
+    end
   end
 end
